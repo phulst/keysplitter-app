@@ -1,0 +1,141 @@
+<html>
+  <!-- Standard Meta -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="semantic.min.css">
+  <script
+    src="https://code.jquery.com/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+  <script src="semantic.min.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script src="splitter.js"></script>
+
+  <script type="text/javascript">
+
+function generateQRCode(canvasElem, key) {
+  let options = {
+      color: {
+          dark: '#000',
+          light: '#0000' // Transparent background
+      },
+      scale: 5,
+      errorCorrectionLevel: 'M'
+  };
+
+  QRCode.toCanvas(canvasElem, key, options, function (error) {
+    if (error) console.error(error)
+    console.log('success!');
+  });
+}
+
+$(function(){
+  const splitter = new Splitter();
+
+  // initialize tabs
+  $('.tabular.menu .item').tab();
+
+  // when the split button gets clicked, generate and display the split keys
+  $('#splitButton').click(function() {
+    let keys = splitter.splitPrivateKey($('#pkey').val());
+    for (let i=0; i<keys.length; i++) {
+      $(`#splitkey${i}`).html(keys[i]);
+      generateQRCode($(`#keyCanvas${i}`).get(0), keys[i]);
+    }
+  });
+
+  // when the restore button gets clicked, restore and display the private key
+  $('#restoreButton').click(function() {
+    let key1 = $('#restoreKey1').val();
+    let key2 = $('#restoreKey2').val();
+
+    try {
+      let pkey = splitter.restorePrivateKey(key1, key2);
+      $('#restoredpkey').html(pkey);
+      generateQRCode($('#pkeyCanvas').get(0), pkey);
+
+    } catch (err) {
+      console.error(err);
+    }
+  });
+});
+
+  </script>
+  <body>
+
+<h1 class="ui center aligned header">Split key</h1>
+
+<div class="ui container">
+
+  <div class="ui top attached tabular menu">
+    <div class="active item" data-tab="tab-generate">Generate split keys</div>
+    <div class="item" data-tab="tab-restore">Restore private key</div>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="tab-generate">
+    <!-- Tab Content !-->
+
+    <div class="ui container">
+      <div class="ui fluid action input">
+        <input id="pkey" type="text" placeholder="enter your private key...">
+        <button id="splitButton" class="ui button">Split!</button>
+      </div>
+    </div>
+
+    <div class="ui container">
+      <h2>Key 1</h2>
+      <h4 id="splitkey0"></h4>
+      <canvas id="keyCanvas0"></canvas>
+    </div>
+
+    <div class="ui container">
+      <h2>Key 2</h2>
+      <h4 id="splitkey1"></h4>
+      <canvas id="keyCanvas1"></canvas>
+    </div>
+
+    <div class="ui container">
+      <h2>Key 3</h2>
+      <h4 id="splitkey2"></h4>
+      <canvas id="keyCanvas2"></canvas>
+    </div>
+
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="tab-restore">
+    <!-- Tab Content !-->
+    <div class="ui form">
+      <div class="field">
+        <label>Enter any one of your split keys</label>
+        <input id="restoreKey1" type="text">
+      </div>
+      <div class="field">
+        <label>Enter either of the other two split keys</label>
+        <input id="restoreKey2" type="text">
+      </div>
+
+      <div id="restoreButton" class="ui primary button">
+        Restore private key
+      </div>
+
+      <hr/>
+
+      <div class="field">
+        <h3>Your restored private key</h3>
+        <h4 id="restoredpkey"></h4>
+      </div>
+      <canvas id="pkeyCanvas"></canvas>
+    </div>
+  </div>
+
+
+</div>
+
+
+
+
+
+
+
+  </body>
+</html>
